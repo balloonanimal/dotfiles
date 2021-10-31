@@ -1,0 +1,10 @@
+#!/bin/sh
+
+enabled="$(xinput --list-props "Synaptics tm2964-001" | grep "Device Enabled" | cut -f 3)"
+if [ $enabled == "1" ]
+then
+    xinput disable "Synaptics tm2964-001"
+elif [ $enabled == "0" ]
+then
+     xinput enable "Synaptics tm2964-001"
+fi

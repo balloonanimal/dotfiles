@@ -1,0 +1,3 @@
+#!/bin/sh
+id=$(xinput --list | grep Synaptics | cut -f2 | cut -f2 -d "=")
+xinput set-prop $id "libinput Natural Scrolling Enabled" 1

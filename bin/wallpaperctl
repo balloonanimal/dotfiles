@@ -1,0 +1,26 @@
+#!/bin/sh
+
+main () {
+     case ${1:default} in
+          default) default ;;
+          *) help ;;
+     esac
+}
+
+help () {
+    echo \
+"Usage: wallpaperctl [COMMAND]
+
+Commands:
+  default         Set the wallpaper to its default value
+  help            Print out this help information
+"
+}
+
+default () {
+     hsetroot -solid '#212121'
+     # xargs xwallpaper --stretch < ~/.xwallpaper
+     # nitrogen --restore &
+}
+
+main "$@"

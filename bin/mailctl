@@ -1,0 +1,27 @@
+#!/bin/sh
+
+ACCOUNT_DIR="/home/zach/.mail/account.gmail"
+
+main () {
+    case ${1:sync} in
+        sync) sync ;;
+        *)    help ;;
+    esac
+}
+
+sync () {
+    (
+        cd "$ACCOUNT_DIR"
+        gmi sync && notmuch new && afew -at
+    )
+}
+
+help () {
+    echo \
+"Usage: mailctl [COMMAND]
+
+Commands:
+  sync      Syncs mail"
+}
+
+main "$@"

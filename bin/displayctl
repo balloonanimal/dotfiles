@@ -1,0 +1,44 @@
+#!/bin/sh
+# Inspiration taken from
+# https://github.com/altercation/dotfiles-tilingwm/blob/master/bin/wm/displayctl
+
+# FIXME: currently super brittle, only really works for my specific display
+
+main () {
+    case ${1:auto} in
+        internal) internal ;;
+        external) external ;;
+        both)     both     ;;
+        *)        help     ;;
+    esac
+
+    # restore wallpaper
+    wallpaperctl default
+    # nitrogen --restore >/dev/null 2>&1
+}
+
+help () {
+    echo \
+"Usage: displayctl [COMMAND]
+
+Commands:
+  internal        Switch to internal display
+  external        Switch to external display
+  both            Enable both displays
+  help            Print out this help information
+"
+}
+
+internal () {
+    xrandr --output eDP-1 --auto --output DP-1 --off
+}
+
+external () {
+    xrandr --output eDP-1 --off --output DP-1 --auto --scale 0.5x0.5
+}
+
+both () {
+    xrandr --output eDP-1 --auto --pos 0x0 --output DP-1 --auto --scale 0.5x0.5 --pos 1920x0
+}
+
+main "$@"

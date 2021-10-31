@@ -1,0 +1,36 @@
+#!/bin/sh
+
+memory() {
+    case $1 in
+        total)
+            free --mega | awk '{if (/^Mem/) {printf "%.2fG\n", $2 * 0.001}}'
+            ;;
+        used)
+            free --mega | awk '{if (/^Mem/) {printf "%.2fG\n", $3 * 0.001}}'
+            ;;
+        free)
+            free --mega | awk '{if (/^Mem/) {printf "%.2fG\n", $4 * 0.001}}'
+            ;;
+        available)
+            free --mega | awk '{if (/^Mem/) {printf "%.2fG\n", $7 * 0.001}}'
+            ;;
+    esac    
+}
+
+wifi() {
+    networkname=$(nmcli -t -f active,ssid dev wifi | awk '{if (/^yes/) {split($0, t, ":"); printf "%s\n", t[2]}}')
+    [ -z "$networkname" ] && networkname="Not Connected"
+    echo $networkname
+}
+
+case $1 in
+    mem)
+        memory $2
+        exit
+        ;;
+    wifi)
+        wifi
+        exit
+        ;;
+esac
+ 

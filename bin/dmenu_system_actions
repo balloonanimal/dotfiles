@@ -1,0 +1,12 @@
+#!/bin/sh
+
+options="\
+lock            slock
+leave WM        xmonad  
+restart WM  
+reboot  
+shutdown    
+"
+
+choice="$(echo "$options" | rofi -dmenu -theme nord)" || exit 1
+echo $choice

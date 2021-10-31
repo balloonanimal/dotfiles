@@ -1,0 +1,464 @@
+#+title:My XMonad Config
+#+author: Zach Rothenberg
+#+PROPERTY: header-args :tangle xmonad.hs
+#+STARTUP: showeverything
+
+* TODOS
+** TODO Cleanup imports
+** TODO Comment the variables section
+** TODO need a layout that's Tall but with the minor windows in a monocle setup / maybe tabs?
+** TODO name workspaces?
+** TODO emacs-everywhere isn't getting picked up by myManageHook
+
+* Imports
+#+begin_src haskell
+{-# LANGUAGE DeriveDataTypeable, TypeSynonymInstances, MultiParamTypeClasses #-}
+
+-- import XMonad.Layout.MultiToggle.Instances
+import Data.Monoid
+import Data.Ratio
+import Data.List
+import System.Exit
+import System.IO
+import System.Directory (getTemporaryDirectory)
+import XMonad hiding ( (|||) )
+import XMonad.Actions.MouseResize
+import XMonad.Actions.Navigation2D
+import XMonad.Actions.NoBorders
+import XMonad.Actions.WithAll
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.ManageDocks
+import XMonad.Layout.LayoutCombinators
+import XMonad.Layout.LayoutModifier
+import XMonad.Layout.MultiToggle
+import XMonad.Layout.NoBorders
+import XMonad.Layout.Reflect
+import XMonad.Layout.Renamed
+import XMonad.Layout.ResizableTile
+import XMonad.Layout.Spacing
+import XMonad.Layout.ThreeColumns
+import XMonad.Layout.Fullscreen
+import XMonad.ManageHook
+import XMonad.Util.EZConfig
+import XMonad.Util.NamedActions
+import XMonad.Util.NamedScratchpad
+import XMonad.Util.Run
+import qualified Data.Map as M
+import qualified XMonad.StackSet as W
+#+end_src
+
+* Variables
+These are variables used throughout the ensuing configuration. I try to factor out all possible configuration options to here in order to make small changes to this config as easy as possible.
+#+begin_src haskell
+myModMask :: KeyMask
+myModMask = mod4Mask
+
+myTerminal :: String
+myTerminal = "st"
+
+myBrowser :: String
+myBrowser = "firefox"
+
+myEditor :: String
+myEditor = "launch_emacs"
+
+myBorderWidth :: Dimension
+myBorderWidth = 2
+
+myNormColor :: String
+myNormColor = "#e5e9f0"
+
+myFocusColor :: String
+myFocusColor = "#88c0d0"
+
+myScreenshot :: String
+myScreenshot = "maim $HOME/Downloads/screenshot-\"$(date '+%y%m%d-%H%M-%S').png\""
+
+mySpacing :: Integer
+mySpacing = 4
+#+end_src
+
+Here is where we configure the names of all our workspaces. I like to keep them numbered, as while I often have semantics assigned to each workspace (1 : web, 2 : emacs, etc..) I often break these rules.
+#+begin_src haskell
+myWorkspaces :: [[Char]]
+myWorkspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+#+end_src
+
+* Utils
+This is where I put functions that I define for use elsewhere in the config.
+#+begin_src haskell
+callProcess terms = concat (intersperse " " terms)
+
+toggleFloat w = do
+  (sc, rr) <- floatLocation w
+  windows $ \ws -> if M.member w (W.floating ws)
+                      then W.sink w ws
+                      else W.float w rr ws
+
+-- MINE
+-- keymapToOrg :: [((KeyMask, KeySym), NamedAction)] -> [String]
+-- keymapToOrg keybindings = let
+--   formatLine (k, e) = if null k then "* " ++ e else
+--   in
+-- THEIRS
+-- keymapToOrg keybindings = padding $ do
+--     (k,e) <- keybindings
+    -- if snd k == 0 then map ((,) "") $ showName e
+    --     else map ((,) (keyToString k) . smartSpace) $ showName e
+    -- where padding = let pad n (k,e) = if null k then "\n* "++e else take n (k++repeat ' ') ++ e
+    --                     expand xs n = map (pad n) xs
+    --                     getMax = map (maximum . map (length . fst))
+    --         in concat . (zipWith expand <*> getMax) . groupBy (const $ not . null . fst)
+keymapToOrg = showKmSimple
+
+showKeybindings :: [((KeyMask, KeySym), NamedAction)] -> NamedAction
+showKeybindings x = addName "Show Keybindings" $ io $ do
+  tmpDir <- getTemporaryDirectory
+  let tmpFile = tmpDir ++ "/" ++ "xmonad_keybinds.org"
+  h <- openFile tmpFile WriteMode
+  hPutStr h (unlines $ keymapToOrg x)
+  hClose h
+  return ()
+#+end_src
+
+* Key Bindings
+I would really like for this to be data instead of a function. Unfortunately as far as I know XMonad has no way to switch workspaces using =W.greedyView= without the workspace name given by =XMonad.workspaces=, which requires the config as an argument. So alas we are a function.
+#+begin_src haskell
+myKeymapList conf = [
+  ("Launchers",
+     [("M-S-;", "Launcher",
+       spawn "rofi -show run -theme nord"),
+      ("M-w", "Open browser",
+       spawn myBrowser),
+      ("M-e", "Open editor",
+       spawn myEditor),
+      ("M-r", "Open file browser",
+       spawn (myEditor ++ " --eval '(dired nil)'")),
+      ("M-a", "Open agenda",
+       spawn (myEditor ++ " --eval \"(progn (require \'org) (z/switch-to-agenda))\"")),
+      ("M-<Return>", "Open terminal",
+       spawn myTerminal),
+      ("M-S-<Return>", "Open terminal scratchpad",
+       namedScratchpadAction myScratchPads "terminal"),
+      ("M-c", "Open calculator scratchpad",
+       namedScratchpadAction myScratchPads "calculator")]),
+
+  ("System",
+     [("M-<F1>", "Display this documentation",
+       spawn "TODO"),
+      ("M-<F2>", "Rebuild & restart XMonad",
+       spawn "xmonad --recompile; xmonad --restart"),
+      ("M-x", "Lock screen",
+       spawn "zzz")]),
+
+  ("Actions",
+     [("<Print>", "Take screenshot",
+       spawn myScreenshot),
+      ("S-<Print>", "Take screenshot (area)",
+       spawn (myScreenshot ++ " -s -o")),
+      ("M-\\", "Emacs everywhere",
+       spawn ("emacsclient --eval '(emacs-everywhere)'"))]),
+
+  ("Windows",
+     [("M-<Backspace>", "Kill window",
+       kill),
+      ("M-S-<Backspace>", "Kill all windows",
+       killAll),
+      -- TODO maybe recategorize these?
+      ("M-j", "Focus down",
+       windows W.focusDown),
+      ("M-k", "Focus up",
+       windows W.focusUp),
+      ("M-h", "Shrink",
+       sendMessage Shrink),
+      ("M-l", "Expand",
+       sendMessage Expand),
+      ("M-S-j", "Swap down",
+       windows W.swapDown),
+      ("M-S-k", "Swap up",
+       windows W.swapUp),
+      ("M-,", "Increase number of master windows",
+       sendMessage (IncMasterN 1)),
+      ("M-.", "Decrease number of master windows",
+       sendMessage (IncMasterN (-1))),
+
+      -- ("M-v", "Focus master",
+      --  windows W.focusMaster),
+      ("M-s", "Increase window spacing",
+       incWindowSpacing 4),
+      ("M-S-s", "Decrease window spacing",
+       decWindowSpacing 4),
+      -- ("M-S-b",  "Toggle window borders",
+      --  withFocused toggleBorder),
+      ("M-y", "Toggle float for focused window",
+       withFocused toggleFloat)]),
+
+  ("Layouts",
+     [("M-<Space>", "Cycle layouts",
+       sendMessage NextLayout),
+      ("M-f", "Switch to fullscreen layout",
+       sendMessage $ JumpToLayout "[F]")]),
+
+  ("Workspaces",
+     (concat
+      [[("M-" ++ k, "Switch to workspace " ++ k,
+         windows $ W.greedyView i)
+         | (i, k) <- (zip (XMonad.workspaces conf) (map show [1..9]))],
+       [("M-S-" ++ k, "Move window to workspace " ++ k,
+         windows $ W.shift i)
+         | (i, k) <- (zip (XMonad.workspaces conf) (map show [1..9]))]])),
+
+  ("Media",
+     [("<XF86AudioMute>", "Mute audio",
+        spawn "pulsemixer --toggle-mute"),
+      ("<XF86AudioRaiseVolume>", "Volume up",
+        spawn "pulsemixer --change-volume +5"),
+      ("<XF86AudioLowerVolume>", "Volume down",
+        spawn "pulsemixer --change-volume -5")])]
+
+keymapListToKeymap keymapList = let
+    dropDescription keymapTuple = let (key, _, action) = keymapTuple in (key, action)
+    justTheBindings subsection = map dropDescription (snd subsection)
+  in concat (map justTheBindings keymapList)
+
+-- myKeys conf = let
+--   subKeys str ks = subtitle str : mkNamedKeymap conf ks
+--   in
+--   ------------------------------------------------------------------------------
+--   -- Launchers
+--   ------------------------------------------------------------------------------
+--   subKeys "Launchers"
+--   [ ("M-S-;", addName "Launcher" $ spawn "rofi -show run -theme nord")
+--   , ("M-w", addName "Open browser" $ spawn myBrowser)
+--   , ("M-e", addName "Open editor" $ spawn myEditor)
+--   , ("M-r", addName "Open file browser"
+--       $ spawn (myEditor ++ " --eval '(dired nil)'"))
+--   , ("M-a", addName "Open agenda"
+--       $ spawn (myEditor ++ " --eval \"(progn (require \'org) (z/switch-to-agenda))\""))
+--   , ("M-<Return>", addName "Open terminal" $ spawn myTerminal)
+--   , ("M-S-<Return>", addName "Open terminal scratchpad"
+--       $ namedScratchpadAction myScratchPads "terminal")
+--   , ("M-c", addName "Open calculator scratchpad"
+--       $ namedScratchpadAction myScratchPads "calculator")
+--   ] ^++^
+
+--   ------------------------------------------------------------------------------
+--   -- System / Util
+--   ------------------------------------------------------------------------------
+--   subKeys "System"
+--   [ ("M-<F2>", addName "Rebuild & restart XMonad" $ spawn "xmonad --recompile; xmonad --restart")
+--   , ("M-x",    addName "Lock screen"              $ spawn "zzz")
+--   ] ^++^
+
+--   ------------------------------------------------------------------------------
+--   -- Actions
+--   ------------------------------------------------------------------------------
+--   subKeys "Actions"
+--   [ ("<Print>", addName "Take screenshot" $ spawn myScreenshot)
+--   , ("S-<Print>", addName "Take screenshot (area)"
+--       $ spawn (myScreenshot ++ " -s -o"))
+--   , ("M-\\", addName "Emacs everywhere" $ spawn ("emacsclient --eval '(emacs-everywhere)'"))
+--   ] ^++^
+
+
+--   ------------------------------------------------------------------------------
+--   -- Windows
+--   ------------------------------------------------------------------------------
+--   subKeys "Windows"
+--   (
+--   [ ("M-<Backspace>", addName "Kill window" $ kill)
+--   , ("M-S-<Backspace>", addName "Kill all windows" $ killAll)
+--   , ("M-v", addName "Focus master" $ windows W.focusMaster)
+--   , ("M-s", addName "Increase window spacing" $ incWindowSpacing 4)
+--   , ("M-S-s", addName "Decrease window spacing" $ decWindowSpacing 4)
+--   , ("M-y", addName "Toggle float for focused window" $ withFocused toggleFloat)
+
+--   -- , ("M-h", addName "Focus window left"  $ windowGo L True)
+--   -- , ("M-j", addName "Focus window down"  $ windowGo D True)
+--   -- , ("M-k", addName "Focus window up"    $ windowGo U True)
+--   -- , ("M-l", addName "Focus window right" $ windowGo R True)
+
+--   -- , ("M-S-h", addName "Move window left"  $ windowSwap L True)
+--   -- , ("M-S-j", addName "Move window down"  $ windowSwap D True)
+--   -- , ("M-S-k", addName "Move window up"    $ windowSwap U True)
+--   -- , ("M-S-l", addName "Move window right" $ windowSwap R True)
+
+
+--   -- , ("M-]", addName "Expand window"  $ sendMessage Expand)
+--   -- , ("M-[", addName "Shrink window"  $ sendMessage Shrink)
+--   -- , ("M-S-[", addName "Expand window"    $ windowSwap U True)
+--   -- , ("M-S-]", addName "Move window right" $ windowSwap R True)
+--   , ("M-S-b",  addName "Toggle window borders" $ withFocused toggleBorder)
+--   ])
+--   ^++^
+
+--   ------------------------------------------------------------------------------
+--   -- Windows
+--   ------------------------------------------------------------------------------
+--   subKeys "Layouts"
+--   [ ("M-<Tab>", addName "Cycle layouts" $ sendMessage NextLayout)
+--   , ("M-f", addName "Switch to fullscreen layout"
+--             $ sendMessage $ JumpToLayout "full")
+--   ] ^++^
+
+--   ------------------------------------------------------------------------------
+--   -- Media
+--   ------------------------------------------------------------------------------
+--   subKeys "Media"
+--   [ ("<XF86AudioMute>", addName "Mute audio"
+--                         $ spawn "pulsemixer --toggle-mute")
+--   , ("<XF86AudioRaiseVolume>", addName "Volume up"
+--                                $ spawn "pulsemixer --change-volume +5")
+--   , ("<XF86AudioLowerVolume>", addName "Volume down"
+--                                $ spawn "pulsemixer --change-volume -5")
+--   ]
+#+end_src
+
+* Layouts
+TODO tabbed, spiral
+#+begin_src haskell
+myLayouts = let
+  -- spacing helper fn
+  spaced = (spacingRaw
+              True
+              (Border 0 0 0 0)
+              True
+              (Border mySpacing mySpacing mySpacing mySpacing)
+              True)
+
+  -- tall layout
+  tall = renamed [Replace "[||]"]
+         $ avoidStruts
+         $ spaced
+         $ Tall 1 (3/100) (2/3)
+
+  -- three col mid layout
+  threecolmid = renamed [Replace "[|||]"]
+                $ avoidStruts
+                $ spaced
+                $ ThreeColMid 1 (3/100) (1/2)
+
+  -- horizontal tall layout
+  horizontaltall = renamed [Replace "[=]"]
+                   $ avoidStruts
+                   $ spaced
+                   $ Mirror
+                   $ Tall 1 (3/100) (2/3)
+
+  -- monocle (fullscreen with bar)
+  monocle = renamed [Replace "[M]"]
+            $ avoidStruts
+            $ noBorders
+            $ Full
+
+  -- full (fullscreen without bar)
+  full = renamed [Replace "[F]"]
+         $ noBorders
+         $ fullscreenFull
+         $ Full
+
+  in (tall ||| threecolmid ||| horizontaltall ||| monocle ||| full)
+
+#+end_src
+
+* Scratch Pads
+#+begin_src haskell
+myScratchPads :: [NamedScratchpad]
+myScratchPads = [ NS "terminal" spawnTerm findTerm manageTerm
+                , NS "calculator" spawnCalc findCalc manageCalc
+                ]
+  where
+    spawnTerm = myTerminal ++ " -n scratchpad"
+    findTerm = resource =? "scratchpad"
+    manageTerm = customFloating $ W.RationalRect l t w h
+      where
+        h = (2/3)
+        w = (2/3)
+        t = (1/6)
+        l = (1/6)
+    spawnCalc = "emacsclient -c\
+                \ --frame-parameters='(quote (name . \"calculator\"))'\
+                \ --eval \"(progn (calc nil 't) (hide-mode-line-mode))\""
+    findCalc = title =? "calculator"
+    manageCalc = customFloating $ W.RationalRect l t w h
+      where
+        h = (2/3)
+        w = (2/3)
+        t = (1/6)
+        l = (1/6)
+#+end_src
+
+* Bar
+#+begin_src haskell
+myPP xmproc1 xmproc2 = def
+  { ppOutput = \x -> hPutStrLn xmproc1 x
+                  >> hPutStrLn xmproc2 x
+  , ppTitle = shorten 50
+  , ppHidden = hiddenPrint
+  , ppHiddenNoWindows = xmobarColor "#677490" "" . hiddenPrint
+  , ppUrgent = xmobarColor "#bf616a" ""
+  , ppSep = " <fc=#677490>|</fc> "
+  }
+  where
+    hiddenPrint ws = if ws == "NSP" then "" else ws
+-- toggleStrutsKey XConfig {XMonad.modMask = modMask} = (modMask, xK_b)
+#+end_src
+
+* Window Manage Hook
+#+begin_src haskell
+myManageHook :: XMonad.Query (Data.Monoid.Endo WindowSet)
+myManageHook =
+        manageSpecific
+    <+> manageDocks
+    <+> namedScratchpadManageHook myScratchPads
+    where
+      manageSpecific = composeAll
+          [ title =? "emacs-anywhere" --> doFloat
+          -- , className =? "Emacs" --> doFloat
+          , className =? "Xmessage" --> doFloat]
+#+end_src
+
+* Navigation2D
+#+begin_src haskell
+myNav2DConf = def
+  { defaultTiledNavigation = centerNavigation
+  , floatNavigation = centerNavigation
+  , unmappedWindowRect = [("full", singleWindowRect)]}
+#+end_src
+
+* Mouse
+#+begin_src haskell
+myFocusFollowsMouse  = False
+myClickJustFocuses   = True
+#+end_src
+
+* Putting it all together (~Main~, ~Config~)
+#+begin_src haskell
+myConfig = def
+        { terminal           = myTerminal
+        , modMask            = myModMask
+        , borderWidth        = myBorderWidth
+        , normalBorderColor  = myNormColor
+        , focusedBorderColor = myFocusColor
+        , layoutHook         = myLayouts
+        , workspaces         = myWorkspaces
+        , manageHook         = myManageHook
+        , focusFollowsMouse  = myFocusFollowsMouse
+        , clickJustFocuses   = myClickJustFocuses
+        , keys               = \c -> mkKeymap c (keymapListToKeymap (myKeymapList c))
+        }
+
+main :: IO ()
+main = do
+  xmproc1 <- spawnPipe (callProcess ["xmobar", "-x", "0",  "$HOME/.config/xmonad/xmobarrc"])
+  xmproc2 <- spawnPipe (callProcess ["xmobar", "-x", "1",  "$HOME/.config/xmonad/xmobarrc2"])
+  -- xmproc <- spawnPipe (callProcess ["xmobar", "$HOME/.config/xmobar/xmobarrc"])
+  xmonad
+    -- $ addDescrKeys ((myModMask, xK_F1), showKeybindings) myKeys
+    $ ewmh
+    $ docks
+    $ myConfig {
+        logHook = dynamicLogWithPP $ myPP xmproc1 xmproc2
+    }
+#+end_src

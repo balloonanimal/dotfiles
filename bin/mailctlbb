@@ -1,0 +1,29 @@
+#!/usr/bin/env bb
+;; (ns java.text)
+;; (defrecord SimpleDateFormat [])
+
+(ns mailctl
+  (:require [babashka.deps :as deps]))
+
+;; (deps/add-deps
+;;  '{:deps {borkdude/spartan.spec {:git/url "https://github.com/borkdude/spartan.spec"
+;;                                  :sha "12947185b4f8b8ff8ee3bc0f19c98dbde54d4c90"}
+;;           expound/expound {:mvn/version "0.8.9"}
+;;           cli-matic/cli-matic {:mvn/version "0.4.3"}}})
+;; (require 'spartan.spec)
+;; (require '[cli-matic.core :refer [run-cmd]])
+
+(def CONFIGURATION
+  {:app         {:command     "mailctl"
+                 :description "A command-line mail tool"
+                 :version     "0.0.1"}
+   :global-opts []
+   :commands    []})
+
+;; (run-cmd *command-line-args* CONFIGURATION)
+
+(defn deploy [args]
+  (let [subcommand (first args)]
+    (((:commands CONFIGURATION) subcommand) (rest args))))
+
+(println *command-line-args*)

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+xrdb .Xresources &
+kbdmods &
+natural_scrolling &
+dunst &
+unclutter &
+picom --experimental-backends &
+battery_notifications &
+# wallpapers
+wallpaperctl default
+xsettingsd &

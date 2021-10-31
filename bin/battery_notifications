@@ -1,0 +1,113 @@
+#!/bin/sh
+
+state="high"
+
+notify() {
+    notify-send -u critical "low battery" "battery under $1% ($2)"
+}
+
+nextstate() {
+    case $state in
+        "high")
+            if [ "$status" = "Discharging" ]; then
+                if [ "$capacity" -lt 5 ]; then
+                    state="under5"
+                    logger "Critical battery threshold"
+                    systemctl hibernate
+                elif [ "$capacity" -lt 10 ]; then
+                    state="under10"
+                    notify 10 "$capacity"
+                elif [ "$capacity" -lt 15 ]; then
+                    state="under15"
+                    notify 15 "$capacity"
+                elif [ "$capacity" -lt 20 ]; then
+                    state="under20"
+                    notify 20 "$capacity"
+                fi
+            fi
+            ;;
+        "under20")
+            if [ "$status" = "Discharging" ]; then
+                if [ "$capacity" -lt 5 ]; then
+                    state="under5"
+                    logger "Critical battery threshold"
+                    systemctl hibernate
+                elif [ "$capacity" -lt 10 ]; then
+                    state="under10"
+                    notify 10 "$capacity"
+                elif [ "$capacity" -lt 15 ]; then
+                    state="under15"
+                    notify 15 "$capacity"
+                fi
+            else
+                if [ "$capacity" -gt 20 ]; then
+                    state="high"
+                fi
+            fi
+            ;;
+        "under15")
+            if [ "$status" = "Discharging" ]; then
+                if [ "$capacity" -lt 5 ]; then
+                    state="under5"
+                    logger "Critical battery threshold"
+                    systemctl hibernate
+                elif [ "$capacity" -lt 10 ]; then
+                    state="under10"
+                    notify 10 "$capacity"
+                fi
+            else
+                if [ "$capacity" -gt 20 ]; then
+                    state="high"
+                elif [ "$capacity" -gt 15 ]; then
+                    state="under20"
+                fi
+            fi
+            ;;
+        "under10")
+            if [ "$status" = "Discharging" ]; then
+                if [ "$capacity" -lt 5 ]; then
+                    state="under5"
+                    logger "Critical battery threshold"
+                    systemctl hibernate
+                elif [ "$capacity" -lt 10 ]; then
+                    notify 10 "$capacity"
+                fi
+            else
+                if [ "$capacity" -gt 20 ]; then
+                    state="high"
+                elif [ "$capacity" -gt 15 ]; then
+                    state="under20"
+                elif [ "$capacity" -gt 10 ]; then
+                    state="under15"
+                fi
+            fi
+            ;;
+        "under5")
+            if [ "$status" = "Discharging" ]; then
+                if [ "$capacity" -lt 5 ]; then
+                    notify-send -u critical "low battery" "CRITICAL battery under 5%"
+                fi
+            else
+                if [ "$capacity" -gt 20 ]; then
+                    state="high"
+                elif [ "$capacity" -gt 15 ]; then
+                    state="under20"
+                elif [ "$capacity" -gt 10 ]; then
+                    state="under15"
+                elif [ "$capacity" -gt 5 ]; then
+                    state="under10"
+                fi
+            fi
+            ;;
+    esac
+    echo "$state"
+}
+
+while true; do
+    acpi -b | awk -F'[,:%]' '{print $2, $3}' | {
+        read -r status capacity
+        state=$(nextstate)
+        echo "$state $status $capacity"
+    }
+    sleep 60
+done

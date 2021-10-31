@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: Clojure Template
+# expand-env: ((yas-indent-line 'fixed))
+# --
+(ns ${1:`(funcall clojure-expected-ns-function)`})
+
+$0
+
+(comment
+
+;; Replace me!
+(def data [1 2 3])
+
+)

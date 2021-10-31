@@ -1,0 +1,10 @@
+# speed up rate
+xset r rate 300 50
+
+# map caps lock to control
+setxkbmap -option ctrl:nocaps
+
+# unless it is pressed without any other keys, than treat as escape
+killall xcape 2>/dev/null ; xcape -e 'Control_L=Escape'
+
+

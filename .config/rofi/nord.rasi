@@ -1,0 +1,73 @@
+configuration {
+    font: "monospace 12";
+    lines: 10;
+    fullscreen: false;
+    sidebar-mode: false;
+    display-run: "» ";
+}
+
+@import "xglobals.rasi"
+
+* {
+  background-color: @bg;
+  text-color: @color6;
+}
+
+window {
+    width: 35%;
+    border: 1px;
+    border-color: @color8;
+    padding: 20px;
+}
+
+listview {
+    spacing: 4px;
+    scrollbar: false;
+    padding: 4px 0px 0px;
+}
+
+element {
+    padding: 1px;
+}
+element normal.urgent {
+    background-color: 				@bg;
+    text-color:       				@color11;
+}
+element normal.active {
+    background-color: 				@bg;
+    text-color:       				@color14;
+}
+element selected {
+    background-color: @color6;
+    text-color: @bg;
+}
+// element selected.normal {
+//     background-color: 				@bg;
+//     text-color:       				@color8;
+// }
+// element selected.urgent {
+//     background-color: 				@bg;
+//     text-color:       				@color11;
+// }
+// element selected.active {
+//     background-color: 				@bg;
+//     text-color:       				@color8;
+// }
+element alternate.normal {
+    background-color: 				@bg;
+    text-color:       				@color6;
+}
+element alternate.urgent {
+    background-color: 				@bg;
+    text-color:       				@color6;
+}
+element alternate.active {
+    background-color: 				@bg;
+    text-color:       				@color6;
+}
+element-text {
+    highlight: bold #88c0d0;
+}
+element-text selected {
+    highlight: bold;
+}

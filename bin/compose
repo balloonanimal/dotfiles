@@ -1,0 +1,6 @@
+#!/bin/sh
+
+picom &
+# hsetroot -cover $HOME/Downloads/japanese-street.png
+hsetroot -solid '#4c566a'
+

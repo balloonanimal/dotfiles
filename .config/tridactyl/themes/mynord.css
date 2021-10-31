@@ -1,0 +1,74 @@
+:root {
+    --base00: #2e3440;
+    --base01: #3b4252;
+    --base02: #434c5e;
+    --base03: #4c566a;
+    --base04: #d8dee9;
+    --base05: #e5e9f0;
+    --base06: #eceff4;
+    --base07: #8fbcbb;
+    --base08: #88c0d0;
+    --base09: #81a1c1;
+    --base0A: #5e81ac;
+    --base0B: #bf616a;
+    --base0C: #d08770;
+    --base0D: #ebcb8b;
+    --base0E: #a3be8c;
+    --base0F: #b48ead;
+
+    --tridactyl-fg: var(--base06);
+    --tridactyl-bg: var(--base00);
+    --tridactyl-url-fg: var(--base08);
+    --tridactyl-url-bg: var(--base00);
+    --tridactyl-highlight-box-bg: var(--base0B);
+    --tridactyl-highlight-box-fg: var(--base00);
+
+    /* Hint character tags */
+    --tridactyl-hintspan-fg: var(--base00) !important;
+    --tridactyl-hintspan-bg: var(--base0A) !important;
+
+    /* Element Highlights */
+    --tridactyl-hint-active-fg: none;
+    --tridactyl-hint-active-bg: none;
+    --tridactyl-hint-active-outline: none;
+    --tridactyl-hint-bg: none;
+    --tridactyl-hint-outline: none;
+}
+
+#command-line-holder {
+    order: 1;
+    padding: 0;
+    padding-left: 1.2em;
+}
+
+#completions {
+    --option-height: 1.4em;
+    color: var(--tridactyl-fg);
+    background: var(--tridactyl-bg);
+    display: inline-block;
+    font-size: unset;
+    overflow: hidden;
+    width: 97%;
+    border-top: unset;
+    padding: 1rem;
+    padding-top: 0;
+    order: 2;
+}
+
+#completions .sectionHeader {
+    display: none;
+}
+
+#completions .focused {
+    background: var(--base03);
+    font-weight: 600;
+}
+
+#completions .focused .url {
+    background: var(--base03);
+    color: unset;
+}
+
+#completions table tr td.prefix,#completions table tr td.icon{
+    display: none;
+}

@@ -1,0 +1,16 @@
+" General Settings
+set configversion 2.0
+set theme mynord
+set smoothscroll true
+
+" Comment toggler for Reddit, Hacker News and Lobste.rs
+bind ;c hint -Jc [class*="expand"],[class="togg"],[class="comment_folder"]
+
+" Use old reddit
+autocmd DocStart ^http(s?)://www.reddit.com js tri.excmds.urlmodify("-t", "www", "old")
+
+" Sort tabs by most recently used
+set tabsort mru
+
+"
+bind V current_url mpvsafe
