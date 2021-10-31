@@ -1,0 +1,9 @@
+* My Dotfiles
+
+Installation instructions
+#+begin_src sh
+git clone https://github.com/hlissner/doom-emacs.git ~/.config/doom-source
+doom install
+git clone https://github.com/plexus/chemacs2.git ~/.emacs.d
+stow .
+#+end_src
