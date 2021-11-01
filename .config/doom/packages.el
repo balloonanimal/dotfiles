@@ -1,9 +1,17 @@
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
-;; [[file:../../.dotfiles/.config/doom/config.org::*Theme][Theme:2]]
+;; [[file:../../.dotfiles/.config/doom/config.org::*Theme][Theme:1]]
+(package! modus-themes)
+;; Theme:1 ends here
+
+;; [[file:../../.dotfiles/.config/doom/config.org::*Theme][Theme:3]]
 (disable-packages! solaire-mode)
-;; Theme:2 ends here
+;; Theme:3 ends here
+
+;; [[file:../../.dotfiles/.config/doom/config.org::*Minibuffer frame][Minibuffer frame:1]]
+(package! mini-frame)
+;; Minibuffer frame:1 ends here
 
 ;; [[file:../../.dotfiles/.config/doom/config.org::*Paren Balancing][Paren Balancing:1]]
 (package! evil-cleverparens)

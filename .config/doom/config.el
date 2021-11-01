@@ -50,18 +50,36 @@
 
 ;; [[file:../../.dotfiles/.config/doom/config.org::*Fonts][Fonts:2]]
 (setq
- doom-font (font-spec :family z/font-monospace :size 12 :weight 'regular)
+ doom-font (font-spec :family z/font-monospace :size 14 :weight 'regular)
  doom-big-font (font-spec :family z/font-monospace :size 32 :weight 'regular)
  doom-variable-pitch-font (font-spec :family z/font-variable-sans :size 16)
  doom-unicode-font (font-spec :family z/font-unicode)
  doom-serif-font (font-spec :family z/font-serif))
 ;; Fonts:2 ends here
 
-;; [[file:../../.dotfiles/.config/doom/config.org::*Theme][Theme:1]]
-;; (setq doom-theme 'doom-nano-dark)
-(setq doom-theme 'mono-white)
-;; (setq doom-theme 'doom-nord)
-;; Theme:1 ends here
+;; [[file:../../.dotfiles/.config/doom/config.org::*Theme][Theme:2]]
+(use-package modus-themes
+  :config
+  (setq doom-theme 'modus-operandi))
+;; Theme:2 ends here
+
+;; [[file:../../.dotfiles/.config/doom/config.org::*Minibuffer frame][Minibuffer frame:2]]
+(use-package mini-frame
+  :after minibuffer
+  :config
+  (custom-set-faces!
+    `(child-frame-border :background ,(face-attribute 'default :foreground)))
+  (setq resize-mini-windows         nil
+        mini-frame-detach-on-hide   nil
+        mini-frame-color-shift-step 0
+        ;; mini-frame-advice-functions '(read-from-minibuffer)
+        mini-frame-show-parameters
+          '((top                      . 0.2)
+            (left                     . 0.5)
+            (width                    . 0.8)
+            (child-frame-border-width . 1)))
+  (mini-frame-mode))
+;; Minibuffer frame:2 ends here
 
 ;; [[file:../../.dotfiles/.config/doom/config.org::*Modeline][Modeline:1]]
 (map! :leader

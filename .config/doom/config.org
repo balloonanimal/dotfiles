@@ -22,6 +22,7 @@
 - [[#appearance-ui][Appearance (~:ui~)]]
   - [[#fonts][Fonts]]
   - [[#theme][Theme]]
+  - [[#minibuffer-frame][Minibuffer frame]]
   - [[#modeline][Modeline]]
   - [[#splash-screen][Splash Screen]]
   - [[#frame][Frame]]
@@ -295,7 +296,7 @@ We store font families in variables here, we're gonna use them later.
 Set doom fonts.
 #+begin_src emacs-lisp
 (setq
- doom-font (font-spec :family z/font-monospace :size 12 :weight 'regular)
+ doom-font (font-spec :family z/font-monospace :size 14 :weight 'regular)
  doom-big-font (font-spec :family z/font-monospace :size 32 :weight 'regular)
  doom-variable-pitch-font (font-spec :family z/font-variable-sans :size 16)
  doom-unicode-font (font-spec :family z/font-unicode)
@@ -303,16 +304,45 @@ Set doom fonts.
 #+end_src
 
 ** Theme
-We use a custom theme, inspired by [[https://github.com/rougier/nano-emacs][nano-emacs]].
-#+begin_src emacs-lisp
-;; (setq doom-theme 'doom-nano-dark)
-(setq doom-theme 'mono-white)
-;; (setq doom-theme 'doom-nord)
+We use the very nice modus operandi theme provided by modus-themes.
+#+begin_src emacs-lisp :tangle "packages.el"
+(package! modus-themes)
 #+end_src
 
-We remove solaire mode, I prefer a uniform dark background for both code and other buffers.
+#+begin_src emacs-lisp
+(use-package modus-themes
+  :config
+  (setq doom-theme 'modus-operandi))
+#+end_src
+
+We remove solaire mode, I prefer a uniform background for both code and other buffers.
 #+begin_src emacs-lisp :tangle "packages.el"
 (disable-packages! solaire-mode)
+#+end_src
+
+** Minibuffer frame
+I'm generally looking close to the center of my screen when I invoke a command that pops up selections in the minibuffer. Instead of having to look down, why don't we center the resulting prompt?
+
+#+begin_src emacs-lisp :tangle "packages.el"
+(package! mini-frame)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package mini-frame
+  :after minibuffer
+  :config
+  (custom-set-faces!
+    `(child-frame-border :background ,(face-attribute 'default :foreground)))
+  (setq resize-mini-windows         nil
+        mini-frame-detach-on-hide   nil
+        mini-frame-color-shift-step 0
+        ;; mini-frame-advice-functions '(read-from-minibuffer)
+        mini-frame-show-parameters
+          '((top                      . 0.2)
+            (left                     . 0.5)
+            (width                    . 0.8)
+            (child-frame-border-width . 1)))
+  (mini-frame-mode))
 #+end_src
 
 ** Modeline
