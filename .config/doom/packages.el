@@ -5,13 +5,17 @@
 (package! modus-themes)
 ;; Theme:1 ends here
 
-;; [[file:../../.dotfiles/.config/doom/config.org::*Theme][Theme:3]]
+;; [[file:../../.dotfiles/.config/doom/config.org::*Theme][Theme:4]]
 (disable-packages! solaire-mode)
-;; Theme:3 ends here
+;; Theme:4 ends here
 
 ;; [[file:../../.dotfiles/.config/doom/config.org::*Minibuffer frame][Minibuffer frame:1]]
 (package! mini-frame)
 ;; Minibuffer frame:1 ends here
+
+;; [[file:../../.dotfiles/.config/doom/config.org::*Misc][Misc:2]]
+;; (package! highlight-parentheses)
+;; Misc:2 ends here
 
 ;; [[file:../../.dotfiles/.config/doom/config.org::*Paren Balancing][Paren Balancing:1]]
 (package! evil-cleverparens)

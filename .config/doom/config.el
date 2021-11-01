@@ -63,6 +63,17 @@
   (setq doom-theme 'modus-operandi))
 ;; Theme:2 ends here
 
+;; [[file:../../.dotfiles/.config/doom/config.org::*Theme][Theme:3]]
+(setq window-divider-default-right-width 16
+      window-divider-default-places t
+      ;; window-divider-default-places 'right-only
+      )
+(custom-set-faces!
+  `(window-divider             :foreground ,(face-attribute 'default :background))
+  `(window-divider-first-pixel :foreground ,(face-attribute 'default :background))
+  `(window-divider-last-pixel  :foreground ,(face-attribute 'default :background)))
+;; Theme:3 ends here
+
 ;; [[file:../../.dotfiles/.config/doom/config.org::*Minibuffer frame][Minibuffer frame:2]]
 (use-package mini-frame
   :after minibuffer
@@ -72,7 +83,10 @@
   (setq resize-mini-windows         nil
         mini-frame-detach-on-hide   nil
         mini-frame-color-shift-step 0
-        ;; mini-frame-advice-functions '(read-from-minibuffer)
+        mini-frame-advice-functions '(read-from-minibuffer
+                                      read-string
+                                      yes-or-no-p)
+        mini-frame-ignore-commands  '(+default/search-buffer)
         mini-frame-show-parameters
           '((top                      . 0.2)
             (left                     . 0.5)
@@ -166,6 +180,14 @@
 ;; [[file:../../.dotfiles/.config/doom/config.org::*Misc][Misc:1]]
 (setq display-line-numbers-type nil)
 ;; Misc:1 ends here
+
+;; [[file:../../.dotfiles/.config/doom/config.org::*Misc][Misc:3]]
+(defadvice! z/replace-rainbow-delimiters (&optional arg)
+  :override #'rainbow-delimiters-mode
+  nil
+  ;; (highlight-parentheses-mode arg)
+  )
+;; Misc:3 ends here
 
 ;; [[file:../../.dotfiles/.config/doom/config.org::*Company][Company:1]]
 (after! company

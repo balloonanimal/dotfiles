@@ -1,7 +1,7 @@
 #+title:My Doom Emacs Config
 #+author: Zach Rothenberg
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------
 # By default all emacs-lisp source blocks should tangle to config.el with
 # comments tracking their location in this file
 #+property: header-args:emacs-lisp :tangle config.el :comments link
@@ -12,7 +12,7 @@
 #
 # This file is large enough that it's nice to startup with all headings folded
 #+startup: fold
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 * Table of Contents :TOC:
 - [[#general-configuration-emacs-doom][General Configuration (~:emacs~, ~:doom~)]]
@@ -315,6 +315,18 @@ We use the very nice modus operandi theme provided by modus-themes.
   (setq doom-theme 'modus-operandi))
 #+end_src
 
+I also like to have my window dividers large and styled with the same color as the background. While the lack of a color distinction risks making it difficult to notice window boundaries the large size of margins fixes this problem.
+#+begin_src emacs-lisp
+(setq window-divider-default-right-width 16
+      window-divider-default-places t
+      ;; window-divider-default-places 'right-only
+      )
+(custom-set-faces!
+  `(window-divider             :foreground ,(face-attribute 'default :background))
+  `(window-divider-first-pixel :foreground ,(face-attribute 'default :background))
+  `(window-divider-last-pixel  :foreground ,(face-attribute 'default :background)))
+#+end_src
+
 We remove solaire mode, I prefer a uniform background for both code and other buffers.
 #+begin_src emacs-lisp :tangle "packages.el"
 (disable-packages! solaire-mode)
@@ -336,7 +348,10 @@ I'm generally looking close to the center of my screen when I invoke a command t
   (setq resize-mini-windows         nil
         mini-frame-detach-on-hide   nil
         mini-frame-color-shift-step 0
-        ;; mini-frame-advice-functions '(read-from-minibuffer)
+        mini-frame-advice-functions '(read-from-minibuffer
+                                      read-string
+                                      yes-or-no-p)
+        mini-frame-ignore-commands  '(+default/search-buffer)
         mini-frame-show-parameters
           '((top                      . 0.2)
             (left                     . 0.5)
@@ -445,6 +460,21 @@ Here is where I configure the annotation keywords I commonly use in code, along 
 No line numbers, we can see what line number we're in with the modeline and jump to a line N using ={N} G= or =:{N}=.
 #+begin_src emacs-lisp
 (setq display-line-numbers-type nil)
+#+end_src
+
+TODO
+No rainbow parens, we highlight the surrounding sexp instead.
+
+#+begin_src emacs-lisp :tangle "packages.el"
+;; (package! highlight-parentheses)
+#+end_src
+
+#+begin_src emacs-lisp
+(defadvice! z/replace-rainbow-delimiters (&optional arg)
+  :override #'rainbow-delimiters-mode
+  nil
+  ;; (highlight-parentheses-mode arg)
+  )
 #+end_src
 
 * Completion Frameworks (~:completion~)
