@@ -1,2 +1,2 @@
 (("doom" .    ((user-emacs-directory . "~/.config/doom-source")))
- ("z-emacs" . ((user-emacs-directory . "~/.config/z-emacs"))))
+ ("z-emacs" . ((user-emacs-directory . "~/code/z-emacs"))))
