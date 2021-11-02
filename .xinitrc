@@ -1,0 +1,4 @@
+#!/bin/sh
+source ~/.xprofile
+
+exec xmonad

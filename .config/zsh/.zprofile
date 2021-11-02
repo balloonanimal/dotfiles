@@ -1,5 +1,8 @@
 #!/bin/zsh
 
+# honor system-wide environment variables
+source /etc/profile
+
 export TERMINAL="st"
 export EDITOR="vim"
 export BROWSER="firefox"

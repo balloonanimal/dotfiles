@@ -1,5 +1,7 @@
 #!/bin/sh
 
+[[ -f ~/.zshenv ]] && source ~/.zshenv
+
 xrdb .Xresources &
 kbdmods &
 natural_scrolling &
@@ -8,5 +10,5 @@ unclutter &
 picom --experimental-backends &
 battery_notifications &
 # wallpapers
-wallpaperctl default
-xsettingsd &
+wallpaperctl default &
+# xsettingsd &
